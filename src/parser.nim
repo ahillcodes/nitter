@@ -339,6 +339,8 @@ proc parseConversation*(js: JsonNode; tweetId: string): Conversation =
           result.after = thread
         else:
           result.replies.content.add thread
+    elif "cursor-top" in entry:
+      result.replies.top = e.getCursor
     elif "cursor-showMore" in entry:
       result.replies.bottom = e.getCursor
     elif "cursor-bottom" in entry:

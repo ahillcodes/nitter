@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 import karax/[karaxdsl, vdom]
+import strformat, uri
 
 import ".."/[types, formatters]
 import tweet, timeline
 
-proc renderEarlier(thread: Chain): VNode =
+proc renderEarlier(cursor: string): VNode =
+  let query = Query()
   buildHtml(tdiv(class="timeline-item more-replies earlier-replies")):
-    a(class="more-replies-text", href=getLink(thread.content[0])):
+    a(class="more-replies-text", href=(&"?{getQuery(query)}cursor={encodeUrl(cursor, usePlus=false)}")):
       text "earlier replies"
 
 proc renderMoreReplies(thread: Chain): VNode =
@@ -14,10 +16,10 @@ proc renderMoreReplies(thread: Chain): VNode =
   buildHtml(tdiv(class="timeline-item more-replies")):
     if thread.content[^1].available:
       a(class="more-replies-text", href=link):
-        text "more replies"
+        text "More replies"
     else:
       a(class="more-replies-text"):
-        text "more replies"
+        text "More replies"
 
 proc renderReplyThread(thread: Chain; prefs: Prefs; path: string): VNode =
   buildHtml(tdiv(class="reply thread thread-line")):
@@ -46,7 +48,8 @@ proc renderConversation*(conv: Conversation; prefs: Prefs; path: string): VNode 
         tdiv(class="before-tweet thread-line"):
           let first = conv.before.content[0]
           if threadId != first.id and (first.replyId > 0 or not first.available):
-            renderEarlier(conv.before)
+            # ahill: Here we need to render a link with a cursor to the next batch of replies that came before
+            renderEarlier(conv.replies.top)
           for i, tweet in conv.before.content:
             renderTweet(tweet, prefs, path, index=i)
 

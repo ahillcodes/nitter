@@ -146,7 +146,7 @@ type
     audiospace = "audiospace"
     newsletterPublication = "newsletter_publication"
     unknown
-    
+
   Card* = object
     kind*: CardKind
     url*: string
@@ -193,9 +193,11 @@ type
     beginning*: bool
     query*: Query
 
+  # ahill: Maybe need to, or helpful to, add "hasEarlier" bool here?
   Chain* = object
     content*: seq[Tweet]
     hasMore*: bool
+    hasEarlier*: bool
     cursor*: string
 
   Conversation* = ref object

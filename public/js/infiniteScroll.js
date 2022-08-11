@@ -8,6 +8,10 @@ function getLoadMore(doc) {
     return doc.querySelector('.show-more:not(.timeline-item)');
 }
 
+function getEarlierReplies(doc) {
+    return doc.querySelector('.earlier-replies');
+}
+
 function isDuplicate(item, itemClass) {
     const tweet = item.querySelector(".tweet-link");
     if (tweet == null) return false;
@@ -24,6 +28,7 @@ window.onload = function() {
     var html = document.querySelector("html");
     var container = document.querySelector(containerClass);
     var loading = false;
+    var initialScroll = html.scrollTop;
 
     window.addEventListener('scroll', function() {
         if (loading) return;
@@ -61,6 +66,43 @@ window.onload = function() {
                 loading = true;
             });
         }
+
+        // Figure out the right condition here
+        if (html.scrollTop + html.clientHeight <= html.scrollHeight - 3000) {
+            loading = true;
+            var earlierReplies = getEarlierReplies(document);
+            if (earlierReplies == null) return;
+
+            earlierReplies.children[0].text = "Loading...";
+
+            var url = new URL(loadMore.children[0].href);
+            url.searchParams.append('scroll', 'true');
+
+            fetch(url.toString()).then(function (response) {
+                return response.text();
+            }).then(function (html) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                earlierReplies.remove();
+
+                for (var item of doc.querySelectorAll(itemClass)) {
+                    if (item.className == "timeline-item show-more") continue;
+                    if (isDuplicate(item, itemClass)) continue;
+                    if (isTweet) container.appendChild(item);
+                    else insertBeforeLast(container, item);
+                }
+
+                loading = false;
+                const newLoadMore = getLoadMore(doc);
+                if (newLoadMore == null) return;
+                if (isTweet) container.appendChild(newLoadMore);
+                else insertBeforeLast(container, newLoadMore);
+            }).catch(function (err) {
+                console.warn('Something went wrong.', err);
+                loading = true;
+            });
+        }
+
     });
 };
 // @license-end

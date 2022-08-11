@@ -5,7 +5,7 @@ import karax/[karaxdsl, vdom]
 import ".."/[types, query, formatters]
 import tweet, renderutils
 
-proc getQuery(query: Query): string =
+proc getQuery*(query: Query): string =
   if query.kind != posts:
     result = genQueryUrl(query)
   if result.len > 0:

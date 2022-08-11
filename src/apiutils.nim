@@ -71,6 +71,10 @@ template fetchImpl(result, fetchBody) {.dirty.} =
     if result.len > 0:
       if resp.headers.getOrDefault("content-encoding") == "gzip":
         result = uncompress(result, dfGzip)
+        echo "*******************************"
+        echo "result: "
+        echo result
+        echo "*******************************"
       else:
         echo "non-gzip body, url: ", url, ", body: ", result
 
@@ -89,6 +93,10 @@ template fetchImpl(result, fetchBody) {.dirty.} =
     raise rateLimitError()
 
 proc fetch*(url: Uri; api: Api): Future[JsonNode] {.async.} =
+  echo "*******************************"
+  echo "url: "
+  echo url
+  echo "*******************************"
   var body: string
   fetchImpl body:
     if body.startsWith('{') or body.startsWith('['):
@@ -106,6 +114,10 @@ proc fetch*(url: Uri; api: Api): Future[JsonNode] {.async.} =
       raise rateLimitError()
 
 proc fetchRaw*(url: Uri; api: Api): Future[string] {.async.} =
+  echo "*******************************"
+  echo "url: "
+  echo url
+  echo "*******************************"
   fetchImpl result:
     if not (result.startsWith('{') or result.startsWith('[')):
       echo resp.status, ": ", result, " --- url: ", url
